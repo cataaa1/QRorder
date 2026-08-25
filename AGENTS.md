@@ -145,7 +145,7 @@ npm run dev          # dev server con turbopack
 npm run build        # build de producción
 npm run lint         # eslint
 npm run typecheck    # tsc --noEmit (correr antes de cada commit)
-npm run test         # vitest
+npm run test         # vitest (sin suite todavia: el script queda listo para cuando se instale)
 npx supabase db push # aplicar migraciones
 ```
 

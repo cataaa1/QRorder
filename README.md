@@ -58,9 +58,34 @@ exponer el dev server en la interfaz Tailscale y configurar la URL publica:
 NEXT_PUBLIC_APP_URL=http://{IP-tailscale}:3000
 ```
 
+El script `dev` ya expone el server en `0.0.0.0`, no hace falta pasar flags extra:
+
 ```bash
-npm run dev -- --hostname 0.0.0.0
+npm run dev
 ```
+
+`next.config.ts` deriva `allowedDevOrigins` de `NEXT_PUBLIC_APP_URL`, asi que al
+cambiar esa variable el acceso desde el celular queda habilitado sin tocar la config.
+
+## Si el 3000 muestra otra app
+
+En Windows un socket en `::` (wildcard IPv6) **no** ocupa el lado IPv4, porque el SO
+usa `IPV6_V6ONLY=1` por defecto. El script `dev` bindea `0.0.0.0` (wildcard IPv4),
+asi que si otro proceso ya escucha en `::3000` los dos binds conviven: Next no
+detecta conflicto, no salta a 3001, y como Windows resuelve `localhost` a `::1`
+primero, el browser termina en el otro servidor.
+
+Para ver quien tiene el puerto:
+
+```powershell
+Get-NetTCPConnection -State Listen | Where-Object LocalPort -eq 3000 |
+  Select-Object LocalAddress, LocalPort, OwningProcess
+Get-CimInstance Win32_Process -Filter "ProcessId=<PID>" | Select-Object CommandLine
+```
+
+Si aparecen dos filas (`::` y `0.0.0.0`), hay dos servidores. Matar el que sobra con
+`Stop-Process -Id <PID> -Force`. Mientras tanto, `http://127.0.0.1:3000` fuerza IPv4
+y llega al dev server de Next.
 
 ## Estructura principal
 
@@ -77,6 +102,7 @@ npm run dev -- --hostname 0.0.0.0
 - `lib/auth/*`, `lib/supabase/*`, `lib/mercadopago.ts`: integraciones core
 - `supabase/migrations/0001_initial.sql`: schema base
 - `supabase/seed.sql`: datos de seed
+- `scripts/seed-menu-images.mjs`: backfill puntual de imagenes del menu
 
 ## Pagos
 

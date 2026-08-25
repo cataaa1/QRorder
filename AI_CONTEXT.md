@@ -186,6 +186,11 @@ Consultar este archivo al inicio de futuras tareas para refrescar memoria.
 - `package.json` script `dev` quedó:
   - `next dev --turbopack --hostname 0.0.0.0`
 - Hubo una confusión previa donde el puerto no respondía porque el dev server no estaba levantado
+- Reincidencia (2026-08): el 3000 servía otra app. Un `node server.js` de otro
+  proyecto había quedado colgado escuchando en `::3000` (IPv6) mientras Next
+  bindeaba `0.0.0.0:3000` (IPv4). En Windows los dos binds no chocan, así que Next
+  no saltó a 3001 y `localhost` (que resuelve `::1` primero) caía en el otro server.
+  Diagnóstico y comandos en la sección "Si el 3000 muestra otra app" del README.
 
 ## Seed
 
